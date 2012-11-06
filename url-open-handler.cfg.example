@@ -1,0 +1,9 @@
+# Handle protocol "message" with mutt handler
+[message]
+module = handler.mutt
+func = handle_message
+
+# Handle protocol "mailto" by calling program with
+# hierarchical part of the url as argument
+[mailto]
+run = ~/bin/test.sh

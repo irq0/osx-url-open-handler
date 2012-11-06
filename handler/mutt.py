@@ -7,9 +7,12 @@ import subprocess
 import json
 import os.path
 import sys
+import re
+import struct
+import time
+import urllib
 
 from appscript import *
-
 
 MUTT="/Users/seri/homebrew/bin/mutt"
 
@@ -86,30 +89,28 @@ def open_new_mutt_in_iterm(message):
     sess.name.set("mutt")
     sess.exec_(command=cmd_seq_to_str(start_new_mutt_cmd(message)))
 
-def open_mail_in_existing_mutt(message):
+def open_mail_in_existing_mutt(message, fallback=open_new_mutt_in_iterm):
     sess = filter(lambda x : x["name"] == "mutt", iterm_sessions())
 
     if len(sess) == 0:
         print "No mutt sessions found -> opening new one"
-        open_new_mutt_in_iterm(message)
+        fallback(message)
     else:
         session = sess[0]["session"]
         print "Opening mail in session: {0}".format(sess[0]["tty"])
 
         session.write(text=mutt_intern_select_cmd(message))
 
+def unquote_mid(mid):
+    result = urllib.unquote(mid)
+    result = result.replace("<","").replace(">","")
+    return result
 
-def main():
-    if len(sys.argv) < 2:
-        print "USAGE: {0} <message_id>".format(sys.argv[0])
-        sys.exit(1)
-
-    message = get_message(sys.argv[1])
-
-    if not message:
-        print "Could not find message"
-        sys.exit(23)
-
-    open_new_mutt_in_iterm(message)
-
-if __name__ == '__main__': main()
+def handle_message(mid, func=open_new_mutt_in_iterm):
+    mid = unquote_mid(mid)
+    msg = get_message(mid)
+    if not msg:
+        from Foundation import NSLog
+        NSLog("No message for %@ found!", mid)
+    else:
+        func(get_message(mid))

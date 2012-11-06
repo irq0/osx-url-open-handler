@@ -1,0 +1,47 @@
+* url-open-handler
+Registers a handler for URL Apple Events and calls python code or
+programs with the URL.
+
+It's main purpose is to direct message://MESSAGE_ID URLs to mutt,
+similar to what [[http://mailtomutt.sourceforge.net/][MailtoMutt]] does for mailto:// URLs.
+
+In the default configuration it listens for /message/ and /mailto/
+URLs. This tool does not register as a default handler for this
+protocols. To register URL handler have a look at
+[[http://www.rubicode.com/Software/RCDefaultApp/][Default App]].
+
+** Dependencies
+- python 2.7
+- pyobjc
+
+** Building
+: python setup.py py2app
+
+** Installing
+Copy =url-open-handler.app= from =dist/= to your =Applications= folder
+
+** Running
+=url-open-handler.app= runs in background without a Dock Icon. I
+suggest you start =url-open-handler.app= with OSX.
+
+** Configuration
+Copy =url-open-handler.cfg.example= to
+=~/Library/Preferences/url-open-handler.cfg= and change it to your
+needs.
+
+A section header represents the protocol part of an URL. In each
+section you can specify either a program to execute or a python
+module to load and a function to call from that module. See the
+example configuration file for details.
+
+** How to add protocols (schemas)
+Add an item to the =CFBundleURLSchemes= list in setup.py and rebuild.
+
+** Handler
+*** Mutt message handler
+The package comes with a message:// handler for mutt. It has code to
+run a new mutt session in iTerm.app or open the mail in an existing
+mutt session.
+
+The handler uses the full-text mail search tool =notmuch= to lookup
+path to message ids.

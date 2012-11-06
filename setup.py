@@ -8,7 +8,7 @@ Usage:
 from setuptools import setup
 
 APP = ['url-open-handler.py']
-DATA_FILES = ['open-message-in-mutt.py']
+DATA_FILES = ['handler']
 OPTIONS = {
     'argv_emulation': True,
     'plist' : {
@@ -26,9 +26,6 @@ OPTIONS = {
                 }]
         }
     }
-
-
-
 
 setup(
     app=APP,

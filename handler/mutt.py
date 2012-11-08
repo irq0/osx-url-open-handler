@@ -16,21 +16,25 @@ from appscript import *
 
 MUTT="/Users/seri/homebrew/bin/mutt"
 
+def quote_filename(filename):
+    return filename.replace(" ", "\\ ")
+
 def get_message(message_id=None):
     result = None
-    out = subprocess.check_output(["notmuch", "show", "--format=json",
+    out = subprocess.check_output(["notmuch", "search", "--format=json",
+                                   "--output=files", "--limit=1",
                                    "id:{message_id}".format(message_id=message_id)])
-    msg = json.loads(out)
+    filenames = json.loads(out)
 
-    if msg:
-        msg = msg[0][0][0]
-        msg["mailbox"] = get_mailbox_path(msg["filename"])
+    if filenames and len(filenames) > 0:
+        result = {
+            "mailbox" : quote_filename(get_mailbox_path(filenames[0])),
+            "id" : message_id,
+        }
 
-        if not os.path.isdir(msg["mailbox"]):
-            print "Mailbox {0} is not a directory!".format(msg["mailbox"])
+        if not os.path.isdir(result["mailbox"]):
+            print "Mailbox {0} is not a directory!".format(result)
             result = None
-        else:
-            result = msg
 
     return result
 
@@ -65,12 +69,12 @@ def start_new_mutt_cmd(message):
     return [MUTT,
             "-f", message["mailbox"],
             "-z",
-            "-e", "push <search>~i{0}<enter><enter>".format(message["id"])]
+            "-e", "push <search>~i\"{0}\"<enter><enter>".format(message["id"])]
 
 def mutt_intern_select_cmd(message):
     return """\
 : push <change-folder>{mailbox}<enter>\
-<search>~i{id}<enter><enter>""".format(**message)
+<search>~i\"{id}\"<enter><enter>""".format(**message)
 
 
 def cmd_seq_to_str(seq):
@@ -106,11 +110,13 @@ def unquote_mid(mid):
     result = result.replace("<","").replace(">","")
     return result
 
-def handle_message(mid, func=open_new_mutt_in_iterm):
+def handle_message(mid, func=open_mail_in_existing_mutt):
+    from Foundation import NSLog
+
     mid = unquote_mid(mid)
     msg = get_message(mid)
     if not msg:
-        from Foundation import NSLog
         NSLog("No message for %@ found!", mid)
     else:
+        NSLog("Opening message %@", msg)
         func(get_message(mid))

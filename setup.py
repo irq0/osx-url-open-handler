@@ -10,7 +10,7 @@ from setuptools import setup
 APP = ['url-open-handler.py']
 DATA_FILES = ['handler']
 OPTIONS = {
-    'argv_emulation': True,
+    'argv_emulation': False,
     'plist' : {
         'CFBundleDevelopmentRegion' : 'en',
         'NSPrincipalClass' : 'NSApplication',
